@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install uv (sets up Python 3.11 + venv)
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
           python-version: "3.11"
