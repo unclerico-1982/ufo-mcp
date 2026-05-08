@@ -85,6 +85,25 @@ async def nara_search(
 
 
 @mcp.tool()
+async def nara_get_record(na_id: int, include_extracted_text: bool = False) -> dict[str, Any]:
+    """Fetch a single NARA catalog record by naId.
+
+    Returns the record's full metadata including the scope-and-content note
+    (short summary), attachment URLs (PDFs, images, etc. on AWS S3), and
+    incident location when present. Pass ``include_extracted_text=True`` to
+    also pull the upstream OCR'd text — substantially larger payload, useful
+    when you want to grep the document body without downloading the PDF.
+
+    na_id: integer naId, e.g. 488808329 for "Pilgrim Drone Spotting"
+
+    Returns ``{record: {...}, meta: {...}}`` or ``{record: None, meta:
+    {error: 'not_found', ...}}``.
+    """
+    client, _imp, _conn = _ensure_started()
+    return await nara.get_record(client, na_id, include_extracted_text=include_extracted_text)
+
+
+@mcp.tool()
 async def fbi_vault_search(
     query: str,
     collection: str | None = None,

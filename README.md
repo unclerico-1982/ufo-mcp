@@ -23,6 +23,7 @@ Currently shipped tools:
 | --- | --- |
 | `aaro_list_cases(category, limit?)` | List items from one of AARO's category pages: `imagery`, `resolution_reports`, `reporting_trends`, `uap_records`, `efoia_reading_room`, `congressional_press_products`. |
 | `nara_search(query, limit?, ancestor_na_id?, record_group_number?)` | Full-text search the National Archives Catalog. Defaults to scoping under Record Group 615 (the UAP collection, naId 445887258); pass `ancestor_na_id=None` to search the whole catalog. |
+| `nara_get_record(na_id, include_extracted_text?)` | Fetch one NARA record by integer naId. Returns title, scope-and-content summary, incident location, and digital-object (PDF/image) URLs. Pass `include_extracted_text=True` to also pull OCR'd document text. |
 | `fbi_vault_search(query, collection?, limit?)` | Search the FBI Vault. Optional `collection`: `UFO`, `Roswell`, or `Hottel` to filter results to that collection's URL prefix. |
 | `fbi_vault_list_collection(collection, limit?)` | Enumerate the parts of an FBI Vault collection (`UFO` has 16 parts, `Roswell` and `Hottel` have one each). |
 
@@ -87,6 +88,8 @@ HTML/JSON to `tests/fixtures/` if the parser comes back empty:
 uv run pursue-mcp-verify aaro resolution_reports
 uv run pursue-mcp-verify nara "ohio"
 uv run pursue-mcp-verify nara "wright-patterson" --no-uap-scope
+uv run pursue-mcp-verify nara-record 488808329           # Pilgrim Drone Spotting
+uv run pursue-mcp-verify nara-record 488808329 --with-text
 uv run pursue-mcp-verify fbi_vault search "Hottel"
 uv run pursue-mcp-verify fbi_vault search "Ohio" UFO
 uv run pursue-mcp-verify fbi_vault list UFO

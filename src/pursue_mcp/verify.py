@@ -100,6 +100,39 @@ async def verify_nara(query: str, scope_uap: bool) -> int:
         await client.aclose()
 
 
+async def verify_nara_record(na_id: int, include_extracted_text: bool) -> int:
+    client = RateLimitedClient()
+    try:
+        print(f"NARA get_record naId={na_id}  include_extracted_text={include_extracted_text}")
+        result = await nara.get_record(
+            client, na_id, include_extracted_text=include_extracted_text
+        )
+        meta = result["meta"]
+        print(f"  http_status: {meta.get('http_status')}  error: {meta.get('error') or '-'}")
+        rec = result.get("record")
+        if not rec:
+            return 1
+        print(f"  title:    {rec['title']}")
+        print(f"  type:     {rec['type']}")
+        print(f"  agency:   {rec.get('originating_agency')}")
+        print(f"  date:     {rec.get('incident_date')}")
+        loc = rec.get("incident_location") or {}
+        print(f"  location: {loc.get('raw') or '-'}")
+        print(f"  url:      {rec.get('source_url')}")
+        if rec.get("summary"):
+            print(f"  summary:  {rec['summary'][:400]}")
+            if len(rec["summary"]) > 400:
+                print(f"            ... ({len(rec['summary'])} chars total)")
+        for a in rec.get("attachments") or []:
+            print(f"  attach:   [{a['kind']}] {a['url']}")
+        if include_extracted_text and rec.get("extracted_text") is not None:
+            txt = str(rec["extracted_text"])
+            print(f"  extracted_text: {len(txt)} chars (first 200): {txt[:200]}")
+        return 0
+    finally:
+        await client.aclose()
+
+
 async def verify_fbi_vault_search(query: str, collection: str | None) -> int:
     client = ImpersonatingClient(dump_dir=FIXTURE_DIR)
     try:
@@ -158,6 +191,14 @@ def main(argv: list[str] | None = None) -> int:
         help="search the entire catalog rather than just RG 615",
     )
 
+    p_nara_rec = sub.add_parser("nara-record", help="Fetch one NARA record by naId")
+    p_nara_rec.add_argument("na_id", type=int, help="integer naId, e.g. 488808329")
+    p_nara_rec.add_argument(
+        "--with-text",
+        action="store_true",
+        help="also pull OCR'd extracted text from attachments",
+    )
+
     p_vault = sub.add_parser("fbi_vault", help="Verify FBI Vault parsers against live Vault")
     vault_sub = p_vault.add_subparsers(dest="action", required=True)
     pv_search = vault_sub.add_parser("search", help="Full-text search Vault")
@@ -179,6 +220,8 @@ def main(argv: list[str] | None = None) -> int:
         return asyncio.run(verify_aaro(args.category))
     if args.source == "nara":
         return asyncio.run(verify_nara(args.query, scope_uap=not args.no_uap_scope))
+    if args.source == "nara-record":
+        return asyncio.run(verify_nara_record(args.na_id, include_extracted_text=args.with_text))
     if args.source == "fbi_vault":
         if args.action == "search":
             return asyncio.run(verify_fbi_vault_search(args.query, args.collection))
