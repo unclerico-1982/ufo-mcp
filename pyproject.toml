@@ -26,6 +26,7 @@ dev = [
 
 [project.scripts]
 pursue-mcp = "pursue_mcp.__main__:main"
+pursue-mcp-verify = "pursue_mcp.verify:main"
 
 [build-system]
 requires = ["hatchling"]
