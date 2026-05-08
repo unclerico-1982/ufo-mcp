@@ -9,6 +9,7 @@ authors = [{ name = "pursue-mcp contributors" }]
 dependencies = [
     "fastmcp>=0.2.0",
     "httpx>=0.27.0",
+    "curl-cffi>=0.7.0",
     "beautifulsoup4>=4.12.0",
     "lxml>=5.0.0",
     "pdfplumber>=0.11.0",
